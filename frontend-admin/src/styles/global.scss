@@ -1,0 +1,147 @@
+// Color System
+$primary-color: #409EFF;
+$primary-light: #ECF5FF;
+$primary-dark: #337ECC;
+
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #C0C4CC;
+
+$bg-page: #F5F7FA;
+$bg-card: #FFFFFF;
+$border-color: #EBEEF5;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+// Reset & Base
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: $text-primary;
+  background-color: $bg-page;
+}
+
+// Element Plus Overrides
+.el-button--primary {
+  --el-button-bg-color: #{$primary-color};
+  --el-button-border-color: #{$primary-color};
+  --el-button-hover-bg-color: #{$primary-dark};
+  --el-button-hover-border-color: #{$primary-dark};
+}
+
+// Card Style
+.page-card {
+  background: $bg-card;
+  border-radius: 8px;
+  box-shadow: $shadow-sm;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+// Page Header
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+  }
+}
+
+// Form Style
+.form-section {
+  background: $bg-card;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 16px;
+  
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid $border-color;
+  }
+}
+
+// Table Style
+.el-table {
+  border-radius: 8px;
+  overflow: hidden;
+  
+  th.el-table__cell {
+    background-color: #FAFAFA !important;
+    color: $text-primary;
+    font-weight: 600;
+  }
+}
+
+// Status Tags
+.status-tag {
+  &.draft { background: #F4F4F5; color: #909399; }
+  &.published { background: #E1F3D8; color: #67C23A; }
+  &.pending { background: #FDF6EC; color: #E6A23C; }
+  &.completed { background: #D9ECFF; color: #409EFF; }
+}
+
+// Question Type Tags
+.question-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  
+  &.single { background: #E1F3D8; color: #67C23A; }
+  &.multi { background: #D9ECFF; color: #409EFF; }
+  &.truefalse { background: #FDF6EC; color: #E6A23C; }
+  &.fill { background: #F4E8FF; color: #9B59B6; }
+  &.short { background: #FFE8E8; color: #F56C6C; }
+  &.essay { background: #E8F4FF; color: #3498DB; }
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C0C4CC;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+// Transitions
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
