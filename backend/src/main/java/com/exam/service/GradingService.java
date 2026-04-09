@@ -64,8 +64,6 @@ public class GradingService {
                         .eq(AnswerRecord::getIsGraded, false)
         );
 
-        int additionalScore = 0;
-
         for (AnswerRecord answer : answers) {
             Question question = questionMapper.selectById(answer.getQuestionId());
             if (question == null) continue;
@@ -89,7 +87,6 @@ public class GradingService {
                     answer.setAiComment(result.comment);
                     answer.setIsGraded(true);
                     answerRecordMapper.updateById(answer);
-                    additionalScore += result.score;
                 } catch (Exception e) {
                     log.error("AI grading failed for answer {}", answer.getId(), e);
                     // 批改失败时使用模拟批改
@@ -98,7 +95,6 @@ public class GradingService {
                     answer.setAiComment(result.comment + "（API调用失败，已使用模拟批改）");
                     answer.setIsGraded(true);
                     answerRecordMapper.updateById(answer);
-                    additionalScore += result.score;
                 }
             }
         }
