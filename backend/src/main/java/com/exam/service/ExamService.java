@@ -161,10 +161,16 @@ public class ExamService {
             }
         }
 
-        // Update exam record
+        // Update exam record - use count of ungraded items to determine status
+        long ungradedCount = answerRecordMapper.selectCount(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, examRecordId)
+                        .eq(AnswerRecord::getIsGraded, false)
+        );
+        
         ExamRecord record = examRecordMapper.selectById(examRecordId);
         record.setTotalScore(totalScore);
-        record.setGradingStatus(hasSubjective ? "PENDING" : "COMPLETED");
+        record.setGradingStatus(ungradedCount == 0 ? "COMPLETED" : "PENDING");
         examRecordMapper.updateById(record);
     }
 
