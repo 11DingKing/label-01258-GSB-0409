@@ -103,13 +103,30 @@ public class GradingService {
             }
         }
 
-        // Update total score
+        // Recalculate total score from all graded answers (fix: avoid cumulative score bug on retries)
         record = examRecordMapper.selectById(recordId);
-        record.setTotalScore((record.getTotalScore() != null ? record.getTotalScore() : 0) + additionalScore);
-        record.setGradingStatus("COMPLETED");
+        List<AnswerRecord> allGradedAnswers = answerRecordMapper.selectList(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, true)
+        );
+        int totalScore = allGradedAnswers.stream()
+                .mapToInt(a -> a.getScore() != null ? a.getScore() : 0)
+                .sum();
+        record.setTotalScore(totalScore);
+        
+        // Convergence check: only set to COMPLETED if ALL answers are graded
+        long ungradedCount = answerRecordMapper.selectCount(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, false)
+        );
+        record.setGradingStatus(ungradedCount == 0 ? "COMPLETED" : "PENDING");
+        
         examRecordMapper.updateById(record);
 
-        log.info("AI grading completed for exam record {}", recordId);
+        log.info("AI grading completed for exam record {}, ungraded answers: {}, totalScore: {}", 
+                recordId, ungradedCount, totalScore);
     }
     
     /**
