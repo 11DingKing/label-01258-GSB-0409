@@ -177,7 +177,8 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await getPendingGrading()
-    recordList.value = res.data
+    // Filter out completed records - only show PENDING and GRADING
+    recordList.value = (res.data || []).filter(record => record.gradingStatus !== 'COMPLETED')
   } finally {
     loading.value = false
   }

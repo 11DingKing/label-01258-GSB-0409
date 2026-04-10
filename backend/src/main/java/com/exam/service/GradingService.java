@@ -103,13 +103,31 @@ public class GradingService {
             }
         }
 
-        // Update total score
-        record = examRecordMapper.selectById(recordId);
-        record.setTotalScore((record.getTotalScore() != null ? record.getTotalScore() : 0) + additionalScore);
-        record.setGradingStatus("COMPLETED");
+        // Recalculate total score from all graded answers to avoid double counting
+        List<AnswerRecord> allGradedAnswers = answerRecordMapper.selectList(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, true)
+        );
+        int finalTotalScore = allGradedAnswers.stream()
+                .mapToInt(a -> a.getScore() != null ? a.getScore() : 0)
+                .sum();
+        record.setTotalScore(finalTotalScore);
+
+        // Check if all answers are graded before setting COMPLETED status
+        long ungradedCount = answerRecordMapper.selectCount(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, false)
+        );
+        if (ungradedCount == 0) {
+            record.setGradingStatus("COMPLETED");
+        } else {
+            record.setGradingStatus("PENDING");
+        }
         examRecordMapper.updateById(record);
 
-        log.info("AI grading completed for exam record {}", recordId);
+        log.info("AI grading completed for exam record {}, totalScore={}, ungradedCount={}", recordId, finalTotalScore, ungradedCount);
     }
     
     /**
