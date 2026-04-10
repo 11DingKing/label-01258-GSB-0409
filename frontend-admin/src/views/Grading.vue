@@ -177,7 +177,10 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await getPendingGrading()
-    recordList.value = res.data
+    // 前端防御性过滤：只显示待批改/批改中状态，确保已完成的不出现
+    recordList.value = res.data.filter(item => {
+      return item.gradingStatus === 'PENDING' || item.gradingStatus === 'GRADING'
+    })
   } finally {
     loading.value = false
   }

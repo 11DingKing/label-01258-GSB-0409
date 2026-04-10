@@ -103,10 +103,26 @@ public class GradingService {
             }
         }
 
-        // Update total score
+        // Update total score - recalculate from all graded answers to ensure correctness
+        List<AnswerRecord> allGradedAnswers = answerRecordMapper.selectList(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, true)
+        );
+        int totalScore = allGradedAnswers.stream()
+                .mapToInt(a -> a.getScore() != null ? a.getScore() : 0)
+                .sum();
+        
+        // Convergence check for gradingStatus
+        long ungradedCount = answerRecordMapper.selectCount(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, recordId)
+                        .eq(AnswerRecord::getIsGraded, false)
+        );
+        
         record = examRecordMapper.selectById(recordId);
-        record.setTotalScore((record.getTotalScore() != null ? record.getTotalScore() : 0) + additionalScore);
-        record.setGradingStatus("COMPLETED");
+        record.setTotalScore(totalScore);
+        record.setGradingStatus(ungradedCount == 0 ? "COMPLETED" : "PENDING");
         examRecordMapper.updateById(record);
 
         log.info("AI grading completed for exam record {}", recordId);
@@ -156,16 +172,23 @@ public class GradingService {
             throw new BusinessException("得分不能超过题目满分");
         }
 
-        int oldScore = answer.getScore() != null ? answer.getScore() : 0;
         answer.setScore(score);
         answer.setAiComment(comment);
         answer.setIsGraded(true);
         answerRecordMapper.updateById(answer);
 
-        // Update exam record total score
+        // Update exam record - recalculate total score to ensure consistency
+        List<AnswerRecord> allGradedAnswers = answerRecordMapper.selectList(
+                new LambdaQueryWrapper<AnswerRecord>()
+                        .eq(AnswerRecord::getExamRecordId, answer.getExamRecordId())
+                        .eq(AnswerRecord::getIsGraded, true)
+        );
+        int totalScore = allGradedAnswers.stream()
+                .mapToInt(a -> a.getScore() != null ? a.getScore() : 0)
+                .sum();
+
         ExamRecord record = examRecordMapper.selectById(answer.getExamRecordId());
-        int newTotal = (record.getTotalScore() != null ? record.getTotalScore() : 0) - oldScore + score;
-        record.setTotalScore(newTotal);
+        record.setTotalScore(totalScore);
 
         // Check if all graded
         long ungradedCount = answerRecordMapper.selectCount(
