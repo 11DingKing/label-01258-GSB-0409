@@ -177,7 +177,9 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await getPendingGrading()
-    recordList.value = res.data
+    recordList.value = res.data.filter(record => 
+      record.gradingStatus === 'PENDING' || record.gradingStatus === 'GRADING'
+    )
   } finally {
     loading.value = false
   }
